@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: api
+    ports:
+      - "3000:3000"
+    volumes:
+      - "./backend:/app"  # Mount backend code into the container
+    depends_on:
+      - mongo
+    environment:
+      - DB_CONNECT=mongodb://mongo:27017/locationCar-rest-api  # MongoDB connection string
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=locationCar-rest-api  # Optional: Set the default database name
+    volumes:
+      - mongodb_data:/data/db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "4200:4200"  # Adjust if your Angular application runs on a different port
+    volumes:
+      - ./frontend:/app  # Mount frontend code into the container
+    environment:
+      - API_URL=http://api:3000  # Point to the API service within Docker network
+
+volumes:
+  mongodb_data:
+    driver: local
